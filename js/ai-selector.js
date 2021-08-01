@@ -71,6 +71,12 @@
                     this.maxScore = score
                 }
             }
+            if (gaps.bottom > 0) {
+                var saveInfo = this.save()
+                game.playStep('down', 1, false);
+                this.dfs(level + 1)
+                this.load(saveInfo)
+            }
             if (gaps.left > 0) {
                 var saveInfo = this.save()
                 game.playStep('left', 1, false);
@@ -80,12 +86,6 @@
             if (gaps.right > 0) {
                 var saveInfo = this.save()
                 game.playStep('right', 1, false);
-                this.dfs(level + 1)
-                this.load(saveInfo)
-            }
-            if (gaps.bottom > 0) {
-                var saveInfo = this.save()
-                game.playStep('down', 1, false);
                 this.dfs(level + 1)
                 this.load(saveInfo)
             }
