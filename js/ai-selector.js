@@ -1,6 +1,6 @@
 ((global) => {
     var Selector = {
-        isVisited: [],
+        visitedInfo: [],
         maxGameInfo: null,
         maxScore: -1,
         show() {
@@ -9,11 +9,14 @@
             console.log(game.tetris.gridConfig, game.tetris.curBrickInfo, game.tetris.grids)
         },
         init() {
-            this.isVisited = new Array();
+            this.visitedInfo = new Array()
             for (var i = 0; i < 10; i++) {
-                this.isVisited[i] = new Array();
+                this.visitedInfo[i] = new Array()
                 for (var j = 0; j < 20; j++) {
-                    this.isVisited[i][j] = null
+                    this.visitedInfo[i][j] = new Array()
+                    for (var k = 0; k < 5; k++) {
+                        this.visitedInfo[i][j][k] = null;
+                    }
                 }
             }
             this.maxGameInfo = null
@@ -22,7 +25,7 @@
         search() {
             this.init()
             //this.show()
-            this.dfs(0)
+            this.dfs(0, game.tetris.stateIndex)
 
             this.load(this.maxGameInfo)
         },
@@ -40,31 +43,23 @@
             game.tetris.curBrickInfo = saveInfo.curBrickInfo
             game.render(true)
         },
-        visitedCheck(level) {
-            var visitRecord = this.isVisited[game.tetris.curBrickCenterPos[0]][game.tetris.curBrickCenterPos[1]];
-            if (this.isVisited[game.tetris.curBrickCenterPos[0]][game.tetris.curBrickCenterPos[1]] != null) {
-                if (level > visitRecord.level) {
-                    return true
-                }
+        visitedCheck() {
+            if (this.visitedInfo[game.tetris.curBrickCenterPos[0]][game.tetris.curBrickCenterPos[1]][game.tetris.stateIndex] != null) {
+                return true
             }
-            if (visitRecord == null) {
-                visitRecord = {
-                    level: level
-                }
-            }
-            visitRecord.level = level
-            this.isVisited[game.tetris.curBrickCenterPos[0]][game.tetris.curBrickCenterPos[1]] = visitRecord
+            this.visitedInfo[game.tetris.curBrickCenterPos[0]][game.tetris.curBrickCenterPos[1]][game.tetris.stateIndex] = true;
             return false
         },
         //搜索所有落点
-        dfs(level) {
-            if (this.visitedCheck(level)) {
+        dfs() {
+            if (this.visitedCheck()) {
+                //console.log("已访问 " + "level = " + level + " stateIndex = " + game.tetris.stateIndex)
                 return
             }
             gaps = game.tetris.getBrickGaps(game.tetris.gridConfig, game.tetris.curBrickInfo, game.tetris.grids)
 
             if (gaps.bottom == 0) {
-                // console.log("找到落点:" + game.tetris.curBrickCenterPos)
+                console.log("找到落点:" + game.tetris.curBrickCenterPos + " 方向" + game.tetris.stateIndex)
                 var score = scoreModule.getScore()
                 if (score > this.maxScore) {
                     this.maxGameInfo = this.save()
@@ -74,20 +69,26 @@
             if (gaps.bottom > 0) {
                 var saveInfo = this.save()
                 game.playStep('down', 1, false);
-                this.dfs(level + 1)
+                this.dfs()
                 this.load(saveInfo)
             }
             if (gaps.left > 0) {
                 var saveInfo = this.save()
                 game.playStep('left', 1, false);
-                this.dfs(level + 1)
+                this.dfs()
                 this.load(saveInfo)
             }
             if (gaps.right > 0) {
                 var saveInfo = this.save()
                 game.playStep('right', 1, false);
-                this.dfs(level + 1)
+                this.dfs()
                 this.load(saveInfo)
+            }
+            for (i = 0; i < 3; i++) {
+                game.tetris.rotate();
+                if (game.tetris.stateIndex != undefined) {
+                    this.dfs()
+                }
             }
         }
     };
