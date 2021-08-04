@@ -215,8 +215,8 @@
             });
 
             const fullRowIndexes = [];
-            let occupiedRowCount = 0;
             let occupiedGridCount = 0;
+            let minOccupiedRowIndex = this.gridConfig.row - 1;
 
             this.grids.forEach((row, rowIndex) => {
                 let occupiedGrirdCountPerRow = 0;
@@ -230,7 +230,7 @@
 
                 // 当前行有被占用的格子，被占用行计数加1
                 if (occupiedGrirdCountPerRow > 0) {
-                    occupiedRowCount += 1;
+                    minOccupiedRowIndex = rowIndex < minOccupiedRowIndex ? rowIndex : minOccupiedRowIndex;
                 }
 
                 // 当前行所有格子都被占用，满行计数加1
@@ -242,7 +242,7 @@
             });
 
             const ret = {
-                topTouched: occupiedRowCount === this.gridConfig.row,
+                topTouched: minOccupiedRowIndex === 0,
                 isRoundLimited: this.brickCount >= this.maxBrickCount,
             };
 

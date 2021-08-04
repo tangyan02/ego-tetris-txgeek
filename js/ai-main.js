@@ -1,9 +1,18 @@
 ((global) => {
+
     var AI = {
-        start() {
+        showRecord() {
+            console.log(JSON.stringify(game.tetris.opRecord))
+        },
+        start(count) {
+            if (count == 0) {
+                console.log(JSON.stringify(game.tetris.opRecord))
+                return;
+            }
             selector.search()
 
             game.playStep('down', 1);
+
             console.log("max score = " + selector.maxScore)
 
             //休息继续找
@@ -12,9 +21,11 @@
                     setTimeout(resolve, time);
                 });
             };
-            sleep(300).then(() => {
+            sleep(1).then(() => {
                 if (game.tetris.status === 'running') {
-                    this.start()
+                    this.start(count - 1)
+                } else {
+                    console.log(JSON.stringify(game.tetris.opRecord))
                 }
             });
 

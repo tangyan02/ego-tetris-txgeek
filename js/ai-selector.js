@@ -31,9 +31,12 @@
         },
         save() {
             var saveInfo = {
+                grids: JSON.parse(JSON.stringify(game.tetris.grids)),
                 curBrickCenterPos: JSON.parse(JSON.stringify(game.tetris.curBrickCenterPos)),
                 opRecord: JSON.parse(JSON.stringify(game.tetris.opRecord)),
-                curBrickInfo: JSON.parse(JSON.stringify(game.tetris.curBrickInfo))
+                curBrickInfo: JSON.parse(JSON.stringify(game.tetris.curBrickInfo)),
+                stateIndex: JSON.parse(JSON.stringify(game.tetris.stateIndex)),
+                curBrickRawInfo: JSON.parse(JSON.stringify(game.tetris.curBrickRawInfo))
             }
             return saveInfo
         },
@@ -41,6 +44,9 @@
             game.tetris.curBrickCenterPos = saveInfo.curBrickCenterPos
             game.tetris.opRecord = saveInfo.opRecord
             game.tetris.curBrickInfo = saveInfo.curBrickInfo
+            game.tetris.stateIndex = saveInfo.stateIndex
+            game.tetris.grids = saveInfo.grids
+            game.tetris.curBrickRawInfo = saveInfo.curBrickRawInfo
             game.render(true)
         },
         visitedCheck() {
@@ -87,11 +93,13 @@
             for (var i = 0; i < 3; i++) {
                 var saveInfo = this.save()
                 game.tetris.rotate();
+                game.render();
                 if (game.tetris.stateIndex != undefined) {
                     this.dfs()
                     this.load(saveInfo)
                 }
             }
+
         }
     };
 

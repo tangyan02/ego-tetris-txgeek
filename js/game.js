@@ -19,7 +19,7 @@
  *
  */
 ((global) => {
-    const defaultPlayFreq = 100000000;
+    const defaultPlayFreq = 1000000000;
     const defaultReplayFreq = 10;
 
     class Game {
@@ -112,15 +112,20 @@
          * @param {string} dir 位移方向
          * @param {number} stepCount 位移步数
          * @param {boolean} needUpdate 是否需要更新
+         * @param {boolean} forceUpdate 是否强制更新（悬停时触发）
          * @return {*}
          */
-        async playStep(dir = 'down', stepCount = 1, needUpdate = true) {
-            // 先执行位移
-            const { bottom } = this.tetris.move(dir, stepCount);
+        async playStep(dir = 'down', stepCount = 1, needUpdate = true, forceUpdate = false) {
+            let bottom = undefined;
             let isStepValid = true;
 
-            // 方块位移后触底，判定为方块落定
-            if (needUpdate && bottom === 0) {
+            if (!forceUpdate) {
+                // 先执行位移
+                bottom = this.tetris.move(dir, stepCount).bottom;
+            }
+
+            // 方块位移后触底 或 强制更新情况下（如：悬空），判定为方块落定
+            if ((needUpdate && bottom === 0) || forceUpdate) {
                 // 方块落定后，更新状态
                 const { topTouched, isRoundLimited } = this.tetris.update();
 
@@ -324,13 +329,13 @@
             this.opts.onEnd && this.opts.onEnd({ score, brickCount, opRecord });
 
             const msg = `【游戏结束信息】
-结束原因：${reason}
-当前运行方块数：${brickCount}
-当前得分：${score}
-最后时刻的画布位置信息：（当最后一个砖块的位置合法时，将包含最后一个砖块在内）\n
-${gridsStr}
-最后时刻的砖块位置信息：
-${brickStr}`;
+  结束原因：${reason}
+  当前运行方块数：${brickCount}
+  当前得分：${score}
+  最后时刻的画布位置信息：（当最后一个砖块的位置合法时，将包含最后一个砖块在内）\n
+  ${gridsStr}
+  最后时刻的砖块位置信息：
+  ${brickStr}`;
 
             console.log(msg);
         }
@@ -506,6 +511,11 @@ ${brickStr}`;
                         this.tetris.drop();
                         this.playStep('down', 1);
                         this.opts.onDrop();
+                        break;
+
+                    // ctrl 键：悬停方块
+                    case 17:
+                        this.playStep('', 0, false, true);
                         break;
                 }
             }
