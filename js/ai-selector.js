@@ -64,14 +64,14 @@
             }
             gaps = game.tetris.getBrickGaps(game.tetris.gridConfig, game.tetris.curBrickInfo, game.tetris.grids)
 
-            // if (gaps.bottom == 0) {
-            //console.log("找到落点:" + game.tetris.curBrickCenterPos + " 方向" + game.tetris.stateIndex)
-            var score = scoreModule.getScore()
-            if (this.maxScore == null || score.total > this.maxScore.total) {
-                this.maxGameInfo = this.save()
-                this.maxScore = score
+            if (gaps.bottom == 0) {
+                // console.log("找到落点:" + game.tetris.curBrickCenterPos + " 方向" + game.tetris.stateIndex)
+                var score = scoreModule.getScore()
+                if (this.maxScore == null || score.total > this.maxScore.total) {
+                    this.maxGameInfo = this.save()
+                    this.maxScore = score
+                }
             }
-            // }
             if (gaps.bottom > 0) {
                 var saveInfo = this.save()
                 game.playStep('down', 1, false);
@@ -93,7 +93,7 @@
             for (var i = 0; i < 3; i++) {
                 var saveInfo = this.save()
                 game.tetris.rotate();
-                game.render();
+                // game.render();
                 if (game.tetris.stateIndex != undefined) {
                     this.dfs()
                     this.load(saveInfo)

@@ -22,7 +22,8 @@
                     setTimeout(resolve, time);
                 });
             };
-            sleep(2000).then(() => {
+
+            sleep(0).then(() => {
                 if (game.tetris.status === 'running') {
                     this.start(count - 1)
                 } else {

@@ -42,7 +42,14 @@
                 this.functions.wells
             ]
 
-            var c = [-0.5, 1, -1, -1, -1, 0]
+            var c = [
+                -8.500158825082766
+                , 3.4181268101392694
+                , -3.2178882868487753
+                , -9.348695305445199
+                , -7.899265427351652
+                , -3.3855972247263626
+            ]
 
             var t = 0;
             var x = Array()
@@ -148,7 +155,7 @@
                 dfs(0, 0)
 
                 var count = 0;
-                for (var i = 1; i < config.gridConfig.row; i++) {
+                for (var i = 0; i < config.gridConfig.row; i++) {
                     for (var j = 0; j < config.gridConfig.col; j++) {
                         if (visited[i][j] == false && game.tetris.grids[i][j] == '') {
                             count++
@@ -158,7 +165,36 @@
                 return count
             },
             wells() {
-                return 0
+                //判断一个格子是不是井
+                var isWell = (i, j) => {
+                    if (game.tetris.grids[i][j] != '') {
+                        return false
+                    }
+                    var left, right
+                    left = false
+                    right = false
+                    if (j == 0 || game.tetris.grids[i][j - 1] != '') {
+                        left = true
+                    }
+                    if (j == config.gridConfig.col || game.tetris.grids[i][j + 1] != '') {
+                        right = true
+                    }
+                    return left && right
+                }
+                var score = 0
+                for (var j = 0; j < config.gridConfig.col; j++) {
+                    var count = 0
+                    for (var i = 0; i < config.gridConfig.row; i++) {
+                        if (isWell(i, j)) {
+                            count++
+                            score += count
+                        } else {
+                            count = 0
+                        }
+                    }
+
+                }
+                return score
             },
         },
     };
