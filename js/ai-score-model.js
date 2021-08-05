@@ -31,21 +31,45 @@
             this.fiilBrick()
 
             //计算模型得分
-            var n = 3
-            var x = [this.functions.lineRemove, this.functions.rowBalance, this.functions.colBalance]
-            var c = [1, -1, -1]
+            var n = 6
 
-            var y = 0;
+            var f = [
+                this.functions.curHeight,
+                this.functions.lineRemove,
+                this.functions.rowBalance,
+                this.functions.colBalance,
+                this.functions.holes,
+                this.functions.wells
+            ]
+
+            var c = [-0.5, 1, -1, -1, -1, 0]
+
+            var t = 0;
+            var x = Array()
             for (var i = 0; i < n; i++) {
-                y += x[i]() * c[i]
+                x[i] = f[i]()
+            }
+            for (var i = 0; i < n; i++) {
+                t += x[i] * c[i]
             }
 
             this.load(saveInfo)
-            //console.log("计算得分 " + y)
-            return y
+
+            var result = {
+                scores: x,
+                weight: c,
+                total: t
+            }
+            // console.log("计算得分 " + JSON.stringify(result))
+            return result
         },
         functions: {
+            curHeight() {
+                //下落高度
+                return 20 - game.tetris.curBrickCenterPos[1]
+            },
             lineRemove() {
+                //消除行数
                 var count = 0
                 for (var i = 0; i < config.gridConfig.row; i++) {
                     var flag = true
@@ -63,7 +87,8 @@
                 return scores[count]
             },
             rowBalance() {
-                var count = 0
+                //行变化成都
+                var count = 1
                 for (var i = 0; i < config.gridConfig.row; i++) {
                     current = game.tetris.grids[i][0]
                     for (var j = 1; j < config.gridConfig.col; j++) {
@@ -76,7 +101,8 @@
                 return count
             },
             colBalance() {
-                var count = 0
+                //列变化成都
+                var count = 1
                 for (var j = 0; j < config.gridConfig.col; j++) {
                     current = game.tetris.grids[0][j]
                     for (var i = 1; i < config.gridConfig.row; i++) {
@@ -87,7 +113,53 @@
                     }
                 }
                 return count
-            }
+            },
+            holes() {
+                //灌水算法计算空洞数
+                var visited = new Array();
+                for (var i = 0; i < config.gridConfig.row; i++) {
+                    visited[i] = new Array()
+                    for (var j = 0; j < config.gridConfig.col; j++) {
+                        visited[i][j] = false;
+                    }
+                }
+                var dx = [0, 0, -1, 1]
+                var dy = [1, -1, 0, 0]
+                var dfs = (i, j) => {
+                    //console.log(i + " " + j)
+                    //已访问
+                    if (visited[i][j] == true) {
+                        return
+                    }
+                    //遇到方块
+                    if (game.tetris.grids[i][j] != '') {
+                        return
+                    }
+                    visited[i][j] = true;
+                    for (var k = 0; k < 4; k++) {
+                        var x = i + dx[k]
+                        var y = j + dy[k]
+                        if (x >= 0 && x < config.gridConfig.row &&
+                            y >= 0 && y < config.gridConfig.col) {
+                            dfs(x, y)
+                        }
+                    }
+                }
+                dfs(0, 0)
+
+                var count = 0;
+                for (var i = 1; i < config.gridConfig.row; i++) {
+                    for (var j = 0; j < config.gridConfig.col; j++) {
+                        if (visited[i][j] == false && game.tetris.grids[i][j] == '') {
+                            count++
+                        }
+                    }
+                }
+                return count
+            },
+            wells() {
+                return 0
+            },
         },
     };
 

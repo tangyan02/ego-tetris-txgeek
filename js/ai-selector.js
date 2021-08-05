@@ -20,7 +20,7 @@
                 }
             }
             this.maxGameInfo = null
-            this.maxScore = -99999999
+            this.maxScore = null
         },
         search() {
             this.init()
@@ -64,14 +64,14 @@
             }
             gaps = game.tetris.getBrickGaps(game.tetris.gridConfig, game.tetris.curBrickInfo, game.tetris.grids)
 
-            if (gaps.bottom == 0) {
-                //console.log("找到落点:" + game.tetris.curBrickCenterPos + " 方向" + game.tetris.stateIndex)
-                var score = scoreModule.getScore()
-                if (score > this.maxScore) {
-                    this.maxGameInfo = this.save()
-                    this.maxScore = score
-                }
+            // if (gaps.bottom == 0) {
+            //console.log("找到落点:" + game.tetris.curBrickCenterPos + " 方向" + game.tetris.stateIndex)
+            var score = scoreModule.getScore()
+            if (this.maxScore == null || score.total > this.maxScore.total) {
+                this.maxGameInfo = this.save()
+                this.maxScore = score
             }
+            // }
             if (gaps.bottom > 0) {
                 var saveInfo = this.save()
                 game.playStep('down', 1, false);
@@ -99,6 +99,7 @@
                     this.load(saveInfo)
                 }
             }
+
 
         }
     };

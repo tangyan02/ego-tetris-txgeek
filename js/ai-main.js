@@ -11,9 +11,10 @@
             }
             selector.search()
 
-            game.playStep('down', 1);
+            // game.playStep('down', 1);
+            game.playStep('', 0, false, true);
 
-            console.log("max score = " + selector.maxScore)
+            console.log("最大得分 " + JSON.stringify(selector.maxScore))
 
             //休息继续找
             var sleep = (time) => {
@@ -21,7 +22,7 @@
                     setTimeout(resolve, time);
                 });
             };
-            sleep(1).then(() => {
+            sleep(2000).then(() => {
                 if (game.tetris.status === 'running') {
                     this.start(count - 1)
                 } else {
