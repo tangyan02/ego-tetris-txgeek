@@ -34,7 +34,7 @@
             var n = 6
 
             var f = [
-                this.functions.curHeight,
+                this.functions.landingHeight,
                 this.functions.lineRemove,
                 this.functions.rowBalance,
                 this.functions.colBalance,
@@ -43,7 +43,7 @@
             ]
 
             var c = [
-                -8.500158825082766
+                -4.500158825082766
                 , 3.4181268101392694
                 , -3.2178882868487753
                 , -9.348695305445199
@@ -71,9 +71,20 @@
             return result
         },
         functions: {
-            curHeight() {
+            landingHeight() {
                 //下落高度
-                return 20 - game.tetris.curBrickCenterPos[1]
+                var curHeight = 19 - game.tetris.curBrickCenterPos[1]
+                var min = 19
+                for (var j = 0; j < config.gridConfig.col; j++) {
+                    for (var i = 0; i < config.gridConfig.row; i++) {
+                        if (game.tetris.grids[i][j] != "") {
+                            if (i < min)
+                                min = i
+                            break
+                        }
+                    }
+                }
+                return curHeight + (19 - min) / 2
             },
             lineRemove() {
                 //消除行数
@@ -91,11 +102,12 @@
                 }
                 //得分系数
                 var scores = [0, 1, 3, 6, 10]
-                return scores[count]
+                // return scores[count]
+                return count
             },
             rowBalance() {
                 //行变化成都
-                var count = 1
+                var count = 0
                 for (var i = 0; i < config.gridConfig.row; i++) {
                     current = game.tetris.grids[i][0]
                     for (var j = 1; j < config.gridConfig.col; j++) {
@@ -109,7 +121,7 @@
             },
             colBalance() {
                 //列变化成都
-                var count = 1
+                var count = 0
                 for (var j = 0; j < config.gridConfig.col; j++) {
                     current = game.tetris.grids[0][j]
                     for (var i = 1; i < config.gridConfig.row; i++) {
@@ -122,42 +134,10 @@
                 return count
             },
             holes() {
-                //灌水算法计算空洞数
-                var visited = new Array();
-                for (var i = 0; i < config.gridConfig.row; i++) {
-                    visited[i] = new Array()
-                    for (var j = 0; j < config.gridConfig.col; j++) {
-                        visited[i][j] = false;
-                    }
-                }
-                var dx = [0, 0, -1, 1]
-                var dy = [1, -1, 0, 0]
-                var dfs = (i, j) => {
-                    //console.log(i + " " + j)
-                    //已访问
-                    if (visited[i][j] == true) {
-                        return
-                    }
-                    //遇到方块
-                    if (game.tetris.grids[i][j] != '') {
-                        return
-                    }
-                    visited[i][j] = true;
-                    for (var k = 0; k < 4; k++) {
-                        var x = i + dx[k]
-                        var y = j + dy[k]
-                        if (x >= 0 && x < config.gridConfig.row &&
-                            y >= 0 && y < config.gridConfig.col) {
-                            dfs(x, y)
-                        }
-                    }
-                }
-                dfs(0, 0)
-
                 var count = 0;
-                for (var i = 0; i < config.gridConfig.row; i++) {
+                for (var i = 1; i < config.gridConfig.row; i++) {
                     for (var j = 0; j < config.gridConfig.col; j++) {
-                        if (visited[i][j] == false && game.tetris.grids[i][j] == '') {
+                        if (game.tetris.grids[i - 1][j] != '' && game.tetris.grids[i][j] == '') {
                             count++
                         }
                     }
@@ -176,7 +156,7 @@
                     if (j == 0 || game.tetris.grids[i][j - 1] != '') {
                         left = true
                     }
-                    if (j == config.gridConfig.col || game.tetris.grids[i][j + 1] != '') {
+                    if (j == config.gridConfig.col - 1 || game.tetris.grids[i][j + 1] != '') {
                         right = true
                     }
                     return left && right

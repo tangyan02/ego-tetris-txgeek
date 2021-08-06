@@ -3,12 +3,16 @@
         visitedInfo: [],
         maxGameInfo: null,
         maxScore: -1,
+        isInit: false,
         show() {
             console.log(game.tetris.curBrickCenterPos)
             console.log(game.tetris.opRecord)
             console.log(game.tetris.gridConfig, game.tetris.curBrickInfo, game.tetris.grids)
         },
         init() {
+            if (this.isInit == true) {
+                return
+            }
             this.visitedInfo = new Array()
             for (var i = 0; i < 10; i++) {
                 this.visitedInfo[i] = new Array()
@@ -19,11 +23,22 @@
                     }
                 }
             }
+            this.isInit = true
+        },
+        reset() {
+            for (var i = 0; i < 10; i++) {
+                for (var j = 0; j < 20; j++) {
+                    for (var k = 0; k < 5; k++) {
+                        this.visitedInfo[i][j][k] = null;
+                    }
+                }
+            }
             this.maxGameInfo = null
             this.maxScore = null
         },
         search() {
             this.init()
+            this.reset()
             //this.show()
             this.dfs(0, game.tetris.stateIndex)
 
@@ -31,12 +46,12 @@
         },
         save() {
             var saveInfo = {
-                grids: JSON.parse(JSON.stringify(game.tetris.grids)),
-                curBrickCenterPos: JSON.parse(JSON.stringify(game.tetris.curBrickCenterPos)),
-                opRecord: JSON.parse(JSON.stringify(game.tetris.opRecord)),
-                curBrickInfo: JSON.parse(JSON.stringify(game.tetris.curBrickInfo)),
-                stateIndex: JSON.parse(JSON.stringify(game.tetris.stateIndex)),
-                curBrickRawInfo: JSON.parse(JSON.stringify(game.tetris.curBrickRawInfo))
+                grids: _.cloneDeep(game.tetris.grids),
+                curBrickCenterPos: _.cloneDeep(game.tetris.curBrickCenterPos),
+                opRecord: _.cloneDeep(game.tetris.opRecord),
+                curBrickInfo: _.cloneDeep(game.tetris.curBrickInfo),
+                stateIndex: _.cloneDeep(game.tetris.stateIndex),
+                curBrickRawInfo: _.cloneDeep(game.tetris.curBrickRawInfo)
             }
             return saveInfo
         },
