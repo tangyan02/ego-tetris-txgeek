@@ -1,25 +1,29 @@
 ((global) => {
-    var ScoreModule = {
+    var ScoreModel = {
         scoreGrids: [],
         save() {
             scoreGrids = _.cloneDeep(game.tetris.grids)
         },
         fillBrick() {
-            //把颜色全部填充一致
-            for (var i = 0; i < config.gridConfig.row; i++) {
-                for (var j = 0; j < config.gridConfig.col; j++) {
-                    if (scoreGrids[i][j] != '') {
-                        scoreGrids[i][j] = 'BRICK'
-                    }
-                }
-            }
-
             for (var i = 0; i < 4; i++) {
                 var row = game.tetris.curBrickInfo.pos[i][1]
                 var col = game.tetris.curBrickInfo.pos[i][0]
                 if (row >= 0 && col >= 0)
                     scoreGrids[row][col] = 'BRICK'
             }
+        },
+        getCurrentMaxHeight(scoreGrids) {
+            var min = 19
+            for (var j = 0; j < config.gridConfig.col; j++) {
+                for (var i = 0; i < config.gridConfig.row; i++) {
+                    if (scoreGrids[i][j] != "") {
+                        if (i < min)
+                            min = i
+                        break
+                    }
+                }
+            }
+            return 19 - min
         },
         getScore() {
             var saveInfo = this.save()
@@ -67,36 +71,11 @@
             landingHeight() {
                 //下落高度
                 var curHeight = 19 - game.tetris.curBrickCenterPos[1]
-                var min = 19
-                for (var j = 0; j < config.gridConfig.col; j++) {
-                    for (var i = 0; i < config.gridConfig.row; i++) {
-                        if (scoreGrids[i][j] != "") {
-                            if (i < min)
-                                min = i
-                            break
-                        }
-                    }
-                }
-                return curHeight + (19 - min) / 2
+                return curHeight + (scoreModel.getCurrentMaxHeight(scoreGrids)) / 2
             },
             lineRemove() {
                 //消除行数
-                var count = 0
-                for (var i = 0; i < config.gridConfig.row; i++) {
-                    var flag = true
-                    for (var j = 0; j < config.gridConfig.col; j++) {
-                        if (scoreGrids[i][j] == '') {
-                            flag = false
-                        }
-                    }
-                    if (flag) {
-                        count++
-                    }
-                }
-                //得分系数
-                var scores = [0, 1, 3, 6, 10]
-                // return scores[count]
-                return count
+                return selector.currentRemoveLines
             },
             rowBalance() {
                 //行变化成都
@@ -172,5 +151,5 @@
         },
     };
 
-    global.scoreModule = ScoreModule;
+    global.scoreModel = ScoreModel;
 })(window);

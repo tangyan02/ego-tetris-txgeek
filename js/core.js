@@ -244,6 +244,7 @@
             const ret = {
                 topTouched: minOccupiedRowIndex === 0,
                 isRoundLimited: this.brickCount >= this.maxBrickCount,
+                removeLines: fullRowIndexes.length
             };
 
             // 触顶或者超过游戏的最大方块数量时，不计分数

@@ -1,17 +1,20 @@
 ((global) => {
     var Selector = {
         visitedInfo: [],
-        stateCount: 0,
-        maxGameInfo: null,
-        maxScore: -1,
+        searchCount: 0,
+        maxGameInfo: new Array(),
+        maxScore: new Array(),
         isInit: false,
-        maxLevel: 1,
+        maxLevel: 2,
+        currentRemoveLines: 0,
+        maxRotate: [1, 3, 3, 3, 0, 1, 1],//7 种类型方块（I,L,J,T,O,S,Z）的最大旋转次数
         init() {
             if (this.isInit == true) {
                 return
             }
+            var InitMaxLevel = 6
             this.visitedInfo = new Array()
-            for (var l = 0; l <= this.maxLevel; l++) {
+            for (var l = 0; l <= InitMaxLevel; l++) {
                 this.visitedInfo[l] = new Array()
                 for (var i = 0; i < 10; i++) {
                     this.visitedInfo[l][i] = new Array()
@@ -35,18 +38,26 @@
             }
         },
         reset() {
-            for (i = 0; i <= this.maxLevel; i++)
+            for (i = 0; i <= this.maxLevel; i++) {
                 this.clearVisited(i)
-            this.maxGameInfo = null
-            this.maxScore = null
-            this.stateCount = 0
+                this.maxGameInfo[i] = null
+                this.maxScore[i] = null
+            }
+            this.searchCount = 0
         },
         search() {
             this.init()
             this.reset()
-            this.dfs(1, 0)
-            this.load(this.maxGameInfo)
+            this.maxGameInfo[0] = this.saveFull()
 
+            this.dfs(1, 0)
+
+            for (var i = this.maxLevel; i >= 0; i--) {
+                if (this.maxGameInfo[i] != null) {
+                    this.loadFull(this.maxGameInfo[i])
+                    break
+                }
+            }
 
             game.render()
             game.playStep('', 0, false, true);
@@ -59,6 +70,57 @@
                 if (row >= 0 && col >= 0)
                     game.tetris.grids[row][col] = 'BRICK'
             }
+        },
+        touchTopCheck() {
+            //判断放着位置是否会卡住下一个方块出生位置
+            for (var i = 0; i < game.tetris.curBrickInfo.pos.length; i++) {
+                for (var j = 0; j < game.tetris.nextBrickRawInfo.pos.length; j++) {
+                    if (game.tetris.curBrickInfo.pos[i][0] == game.tetris.nextBrickRawInfo.pos[j][0] &&
+                        game.tetris.curBrickInfo.pos[i][1] == game.tetris.nextBrickRawInfo.pos[j][1]
+                    )
+                        return true
+                }
+            }
+            //判断是否到顶部
+            for (var i = 0; i < game.tetris.curBrickInfo.pos.length; i++) {
+                if (game.tetris.curBrickInfo.pos[i][1] == 0) {
+                    return true
+                }
+            }
+            return false
+        },
+        saveFull() {
+            var saveInfo = {
+                shapeIndex: _.cloneDeep(game.tetris.shapeIndex),
+                stateIndex: _.cloneDeep(game.tetris.stateIndex),
+                grids: _.cloneDeep(game.tetris.grids),
+                brickCount: _.cloneDeep(game.tetris.brickCount),
+                curRandomNum: _.cloneDeep(game.tetris.curRandomNum),
+
+                curBrickCenterPos: _.cloneDeep(game.tetris.curBrickCenterPos),
+                curBrickRawInfo: _.cloneDeep(game.tetris.curBrickRawInfo),
+                curBrickInfo: _.cloneDeep(game.tetris.curBrickInfo),
+                brickCount: _.cloneDeep(game.tetris.brickCount),
+                nextBrickRawInfo: _.cloneDeep(game.tetris.nextBrickRawInfo),
+                score: _.cloneDeep(game.tetris.score),
+                opRecord: _.cloneDeep(game.tetris.opRecord),
+            }
+            return saveInfo
+        },
+        loadFull(saveInfo) {
+            game.tetris.shapeIndex = saveInfo.shapeIndex
+            game.tetris.stateIndex = saveInfo.stateIndex
+            game.tetris.grids = saveInfo.grids
+            game.tetris.brickCount = saveInfo.brickCount
+            game.tetris.curRandomNum = saveInfo.curRandomNum
+
+            game.tetris.curBrickCenterPos = saveInfo.curBrickCenterPos
+            game.tetris.curBrickRawInfo = saveInfo.curBrickRawInfo
+            game.tetris.curRandomNum = saveInfo.curRandomNum
+            game.tetris.curBrickInfo = saveInfo.curBrickInfo
+            game.tetris.nextBrickRawInfo = saveInfo.nextBrickRawInfo
+            game.tetris.score = saveInfo.score
+            game.tetris.opRecord = saveInfo.opRecord
         },
         save() {
             var saveInfo = {
@@ -74,7 +136,8 @@
                 brickCount: _.cloneDeep(game.tetris.brickCount),
                 nextBrickRawInfo: _.cloneDeep(game.tetris.nextBrickRawInfo),
                 score: _.cloneDeep(game.tetris.score),
-                // opRecord: _.cloneDeep(game.tetris.opRecord),
+                opLenth: game.tetris.opRecord.length,
+                opLast: game.tetris.opRecord[game.tetris.opRecord.length - 1]
             }
             return saveInfo
         },
@@ -91,14 +154,10 @@
             game.tetris.curBrickInfo = saveInfo.curBrickInfo
             game.tetris.nextBrickRawInfo = saveInfo.nextBrickRawInfo
             game.tetris.score = saveInfo.score
-            // game.tetris.opRecord = saveInfo.opRecord
-            while (true) {
-                var last = game.tetris.opRecord[game.tetris.opRecord.length - 1]
-                if (last == 'N') {
-                    break
-                }
+            while (game.tetris.opRecord.length != saveInfo.opLenth) {
                 game.tetris.opRecord.pop()
             }
+            game.tetris.opRecord[game.tetris.opRecord.length - 1] = saveInfo.opLast
         },
         visitedCheck(level) {
             if (this.visitedInfo[level][game.tetris.curBrickCenterPos[0]][game.tetris.curBrickCenterPos[1]][game.tetris.stateIndex] != null) {
@@ -114,23 +173,34 @@
                 return
             }
 
-            gaps = game.tetris.getBrickGaps(game.tetris.gridConfig, game.tetris.curBrickInfo, game.tetris.grids)
+            var gaps = game.tetris.getBrickGaps(game.tetris.gridConfig, game.tetris.curBrickInfo, game.tetris.grids)
+            // console.log(gaps)
             if (gaps.bottom == 0) {
                 // console.log("找到落点:" + game.tetris.curBrickCenterPos + " 方向" + game.tetris.stateIndex)
+                if (this.touchTopCheck() == false) {
+                    this.searchCount++
+                    var score = scoreModel.getScore()
+                    if (this.maxScore[level] == null || score.total > this.maxScore[level].total) {
+                        this.maxGameInfo[level] = this.saveFull()
+                        this.maxScore[level] = score
+                    }
+                }
                 if (level < this.maxLevel) {
-                    var saveInfo = this.save()
-                    this.fillBrick()
-                    this.clearVisited(level + 1)
-                    game.tetris.initBrick()
+                    if (this.touchTopCheck() == false) {
+                        var saveInfo = this.save()
+                        this.fillBrick()
+                        const ret = game.tetris.update()
+                        this.currentRemoveLines += ret.removeLines
 
-                    this.dfs(level + 1, rotateTimes)
-                    this.load(saveInfo)
-                } else {
-                    this.stateCount++
-                    var score = scoreModule.getScore()
-                    if (this.maxScore == null || score.total > this.maxScore.total) {
-                        this.maxGameInfo = this.save()
-                        this.maxScore = score
+                        this.clearVisited(level + 1)
+                        const { isValid, brickCount } = game.tetris.initBrick()
+                        if (isValid == true) {
+                            this.dfs(level + 1, 0)
+                        }
+
+                        this.currentRemoveLines -= ret.removeLines
+                        this.load(saveInfo)
+
                     }
                 }
             }
@@ -153,7 +223,7 @@
                 this.dfs(level, rotateTimes)
                 this.load(saveInfo)
             }
-            if (rotateTimes < 4) {
+            if (rotateTimes < this.maxRotate[game.tetris.shapeIndex]) {
                 var saveInfo = this.save()
                 game.tetris.rotate();
                 if (game.tetris.stateIndex != undefined) {
