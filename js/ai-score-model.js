@@ -133,13 +133,19 @@
                     }
                     return left && right
                 }
+
                 var score = 0
                 for (var j = 0; j < config.gridConfig.col; j++) {
                     var count = 0
                     for (var i = 0; i < config.gridConfig.row; i++) {
                         if (isWell(i, j)) {
                             count++
-                            score += count
+                            //最左侧故意留空,让长条有机会消
+                            if (j > 0) {
+                                score += count
+                            } else {
+                                score -= 0.2
+                            }
                         } else {
                             count = 0
                         }

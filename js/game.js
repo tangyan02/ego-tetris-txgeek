@@ -19,7 +19,7 @@
  *
  */
 ((global) => {
-    const defaultPlayFreq = 1000000000;
+    const defaultPlayFreq = 1000
     const defaultReplayFreq = 10;
 
     class Game {
