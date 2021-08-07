@@ -1,5 +1,5 @@
 ((global) => {
-
+    ``
     var AI = {
         showRecord() {
             console.log(JSON.stringify(game.tetris.opRecord))
@@ -7,10 +7,8 @@
         main() {
             selector.search()
 
-            // game.playStep('down', 1);
-            game.playStep('', 0, false, true);
-
-            console.log("最大得分 " + JSON.stringify(selector.maxScore))
+            console.log("方块数 " + game.tetris.brickCount + "; 得分 " + game.tetris.score
+                + " ;决策数 " + selector.stateCount + "; 步骤 " + JSON.stringify(selector.maxScore))
         },
         start() {
             setInterval(() => {

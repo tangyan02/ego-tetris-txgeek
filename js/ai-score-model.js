@@ -1,20 +1,15 @@
 ((global) => {
     var ScoreModule = {
+        scoreGrids: [],
         save() {
-            var saveInfo = {
-                grids: JSON.parse(JSON.stringify(game.tetris.grids))
-            }
-            return saveInfo
+            scoreGrids = _.cloneDeep(game.tetris.grids)
         },
-        load(saveInfo) {
-            game.tetris.grids = saveInfo.grids
-        },
-        fiilBrick() {
+        fillBrick() {
             //把颜色全部填充一致
             for (var i = 0; i < config.gridConfig.row; i++) {
                 for (var j = 0; j < config.gridConfig.col; j++) {
-                    if (game.tetris.grids[i][j] != '') {
-                        game.tetris.grids[i][j] = 'BRICK'
+                    if (scoreGrids[i][j] != '') {
+                        scoreGrids[i][j] = 'BRICK'
                     }
                 }
             }
@@ -23,12 +18,12 @@
                 var row = game.tetris.curBrickInfo.pos[i][1]
                 var col = game.tetris.curBrickInfo.pos[i][0]
                 if (row >= 0 && col >= 0)
-                    game.tetris.grids[row][col] = 'BRICK'
+                    scoreGrids[row][col] = 'BRICK'
             }
         },
         getScore() {
             var saveInfo = this.save()
-            this.fiilBrick()
+            this.fillBrick()
 
             //计算模型得分
             var n = 6
@@ -60,8 +55,6 @@
                 t += x[i] * c[i]
             }
 
-            this.load(saveInfo)
-
             var result = {
                 scores: x,
                 weight: c,
@@ -77,7 +70,7 @@
                 var min = 19
                 for (var j = 0; j < config.gridConfig.col; j++) {
                     for (var i = 0; i < config.gridConfig.row; i++) {
-                        if (game.tetris.grids[i][j] != "") {
+                        if (scoreGrids[i][j] != "") {
                             if (i < min)
                                 min = i
                             break
@@ -92,7 +85,7 @@
                 for (var i = 0; i < config.gridConfig.row; i++) {
                     var flag = true
                     for (var j = 0; j < config.gridConfig.col; j++) {
-                        if (game.tetris.grids[i][j] == '') {
+                        if (scoreGrids[i][j] == '') {
                             flag = false
                         }
                     }
@@ -109,10 +102,10 @@
                 //行变化成都
                 var count = 0
                 for (var i = 0; i < config.gridConfig.row; i++) {
-                    current = game.tetris.grids[i][0]
+                    current = scoreGrids[i][0]
                     for (var j = 1; j < config.gridConfig.col; j++) {
-                        if (game.tetris.grids[i][j] != game.tetris.grids[i][j - 1]) {
-                            current = game.tetris.grids[i][j]
+                        if (scoreGrids[i][j] != scoreGrids[i][j - 1]) {
+                            current = scoreGrids[i][j]
                             count++
                         }
                     }
@@ -123,10 +116,10 @@
                 //列变化成都
                 var count = 0
                 for (var j = 0; j < config.gridConfig.col; j++) {
-                    current = game.tetris.grids[0][j]
+                    current = scoreGrids[0][j]
                     for (var i = 1; i < config.gridConfig.row; i++) {
-                        if (game.tetris.grids[i][j] != game.tetris.grids[i - 1][j]) {
-                            current = game.tetris.grids[i][j]
+                        if (scoreGrids[i][j] != scoreGrids[i - 1][j]) {
+                            current = scoreGrids[i][j]
                             count++
                         }
                     }
@@ -137,7 +130,7 @@
                 var count = 0;
                 for (var i = 1; i < config.gridConfig.row; i++) {
                     for (var j = 0; j < config.gridConfig.col; j++) {
-                        if (game.tetris.grids[i - 1][j] != '' && game.tetris.grids[i][j] == '') {
+                        if (scoreGrids[i - 1][j] != '' && scoreGrids[i][j] == '') {
                             count++
                         }
                     }
@@ -147,16 +140,16 @@
             wells() {
                 //判断一个格子是不是井
                 var isWell = (i, j) => {
-                    if (game.tetris.grids[i][j] != '') {
+                    if (scoreGrids[i][j] != '') {
                         return false
                     }
                     var left, right
                     left = false
                     right = false
-                    if (j == 0 || game.tetris.grids[i][j - 1] != '') {
+                    if (j == 0 || scoreGrids[i][j - 1] != '') {
                         left = true
                     }
-                    if (j == config.gridConfig.col - 1 || game.tetris.grids[i][j + 1] != '') {
+                    if (j == config.gridConfig.col - 1 || scoreGrids[i][j + 1] != '') {
                         right = true
                     }
                     return left && right
