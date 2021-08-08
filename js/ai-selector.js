@@ -15,6 +15,7 @@
             this.searchCount = 0
         },
         search() {
+            seq.init()
             visited.init()
             this.reset()
             this.maxGameInfo[0] = histroy.saveFull()

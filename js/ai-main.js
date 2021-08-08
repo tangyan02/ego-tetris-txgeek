@@ -8,15 +8,15 @@
         main() {
 
             //如果局势不紧张，搜一层，否则层数增加
-            if (scoreModel.getCurrentMaxHeight(game.tetris.grids) < 9) {
+            if (scoreModel.getCurrentMaxHeight(game.tetris.grids) < 6) {
                 selector.maxLevel = 1
-            } else if (scoreModel.getCurrentMaxHeight(game.tetris.grids) < 16) {
+            } else if (scoreModel.getCurrentMaxHeight(game.tetris.grids) < 15) {
                 selector.maxLevel = 2
             } else {
                 selector.maxLevel = 3
             }
 
-            console.log("方块索引 " + game.tetris.shapeIndex + "; 层数" + selector.maxLevel)
+            console.log("方块索引 " + game.tetris.shapeIndex + "; 层数 " + selector.maxLevel + "; 下一个长条距离 " + seq.getDistanceOfI())
             selector.search()
 
             var level = selector.maxLevel

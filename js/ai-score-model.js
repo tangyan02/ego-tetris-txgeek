@@ -135,17 +135,28 @@
                 }
 
                 var score = 0
+
+                var leftScoreSelect = (count) => {
+                    if (scoreModel.getCurrentMaxHeight(scoreGrids) < 7) {
+                        return - count
+                    }
+
+                    return count
+                }
+
                 for (var j = 0; j < config.gridConfig.col; j++) {
                     var count = 0
                     for (var i = 0; i < config.gridConfig.row; i++) {
                         if (isWell(i, j)) {
                             count++
+
                             //最左侧故意留空,让长条有机会消
-                            if (j > 0) {
-                                score += count
+                            if (j == 0) {
+                                score += leftScoreSelect(count)
                             } else {
-                                score -= 0.2
+                                score += count
                             }
+
                         } else {
                             count = 0
                         }
